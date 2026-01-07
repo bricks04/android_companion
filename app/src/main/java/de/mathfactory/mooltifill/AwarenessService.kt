@@ -8,6 +8,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -251,7 +253,14 @@ class AwarenessService : Service() {
             ?: getString(R.string.default_awareness_message)
         val notification = createNotification(this, msg)
 
-        startForeground(ONGOING_NOTIFICATION_ID, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(ONGOING_NOTIFICATION_ID, notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+            )
+        } else {
+            startForeground(ONGOING_NOTIFICATION_ID, notification)
+        }
+
         serviceStarted.complete(Unit)
         scheduleSendTime()
         return START_STICKY
