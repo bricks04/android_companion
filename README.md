@@ -1,4 +1,5 @@
 # mooltifill-android
+(Fork to add inline suggestions, works with compatible keyboards to show a button above keyboards instead of under the login input.)
 An autofill service for the mooltipass ble device https://www.mymooltipass.com/. After installation there will be a new autofill service which adds
 an autofill option for login forms. When selected, the device is queried for the corresponding
 app/service (which has to be confirmed on the mooltipass device).
