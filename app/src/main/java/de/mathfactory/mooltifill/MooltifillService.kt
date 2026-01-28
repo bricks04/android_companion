@@ -19,9 +19,11 @@
 
 package de.mathfactory.mooltifill
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.assist.AssistStructure
 import android.content.*
+import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.CancellationSignal
 import android.service.autofill.*
@@ -31,6 +33,7 @@ import android.view.View
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillValue
 import android.widget.RemoteViews
+import androidx.autofill.inline.v1.InlineSuggestionUi
 import androidx.collection.ArrayMap
 import kotlinx.coroutines.*
 import java.util.*
@@ -76,6 +79,7 @@ class MooltifillService : AutofillService() {
         return AutofillInfo(query, autofillIds, isWebDomain)
     }
 
+    @SuppressLint("RestrictedApi")
     override fun onFillRequest(request: FillRequest, cancellationSignal: CancellationSignal, callback: FillCallback) {
         logDebug("onFillRequest()")
 
@@ -117,7 +121,45 @@ class MooltifillService : AutofillService() {
         // reuse pending intent only if query is the same (through hashCode())
         val pi = PendingIntent.getActivity(applicationContext, info.query.hashCode(), intent, flags)
         dataset.setAuthentication(pi.intentSender)
-        dataset.setValue(username, null, presentation)
+        // NEW CODE Get Inline Suggestions
+        // Make this a SETTING or something
+        var INLINE_SUGGESTIONS = true
+        if (INLINE_SUGGESTIONS && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)) {
+            logDebug("Attempting to handle inline suggestions")
+            // Note that this build has forcefully changed API version - in true version do a check for API version instead of forcing version?
+            // Get a list of possible Inline Presentations
+            val inlineSuggestions = request.inlineSuggestionsRequest?.inlinePresentationSpecs
+            if (inlineSuggestions == null) {
+                // Null check, return to traditional autofill if no possible suggestions exist
+                dataset.setValue(username, null, presentation)
+            } else {
+                // Log the suggestions
+                logDebug(inlineSuggestions.toString())
+                // Create a slice
+                val targetSpec = inlineSuggestions.first()
+                val attributionIntent = PendingIntent.getService(
+                    this,
+                    0,
+                    Intent(this, MooltifillService::class.java),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                val slice = InlineSuggestionUi
+                    .newContentBuilder(attributionIntent)
+                    .setStartIcon(Icon.createWithResource(applicationContext, R.drawable.ic_launcher_foreground))
+                    .setTitle("Mooltipass")
+                    .setSubtitle(info.substitutedQuery(applicationContext))
+                    .build()
+                // Add the dataset stuff to an inline presentation as well.
+                val inlinePresentation = InlinePresentation(slice.slice, targetSpec, false)
+                // Inline presentation sent to setValue.
+                dataset.setValue(username, null, presentation, inlinePresentation)
+
+            }
+
+        } else {
+            // Old setValue for if API does not match.
+            dataset.setValue(username, null, presentation)
+        }
         response.addDataset(dataset.build())
 
         // Add save info
