@@ -126,7 +126,6 @@ class MooltifillService : AutofillService() {
         var INLINE_SUGGESTIONS = true
         if (INLINE_SUGGESTIONS && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)) {
             logDebug("Attempting to handle inline suggestions")
-            // Note that this build has forcefully changed API version - in true version do a check for API version instead of forcing version?
             // Get a list of possible Inline Presentations
             val inlineSuggestions = request.inlineSuggestionsRequest?.inlinePresentationSpecs
             if (inlineSuggestions == null) {
@@ -135,21 +134,23 @@ class MooltifillService : AutofillService() {
             } else {
                 // Log the suggestions
                 logDebug(inlineSuggestions.toString())
-                // Create a slice
+                // Get the first inline suggestion (likely the first possible slot on keyboard)
                 val targetSpec = inlineSuggestions.first()
+                // Generate required intent for the creation of InlineSuggestionUi
                 val attributionIntent = PendingIntent.getService(
                     this,
                     0,
                     Intent(this, MooltifillService::class.java),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
+                // Create the inlinesuggestionUi builder
                 val slice = InlineSuggestionUi
                     .newContentBuilder(attributionIntent)
                     .setStartIcon(Icon.createWithResource(applicationContext, R.drawable.ic_launcher_foreground))
                     .setTitle("Mooltipass")
                     .setSubtitle(info.substitutedQuery(applicationContext))
                     .build()
-                // Add the dataset stuff to an inline presentation as well.
+                // Combine inlineSuggestionUi, target specifications into inlinePresentation object for setValue.
                 val inlinePresentation = InlinePresentation(slice.slice, targetSpec, false)
                 // Inline presentation sent to setValue.
                 dataset.setValue(username, null, presentation, inlinePresentation)
