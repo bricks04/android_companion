@@ -15,6 +15,12 @@
             app:summaryOn="Track connection state of the mooltipass device and show status notification"
             app:summaryOff="Do not track connection state of the mooltipass device"
             app:defaultValue="true" />
+        <SwitchPreference
+            app:defaultValue="true"
+            app:key="inline"
+            app:summaryOff="Display the autofill prompt below the input box."
+            app:summaryOn="Display the autofill prompt as an inline Autofill prompt in compatible keyboards"
+            app:title="Inline Autofill" />
         <Preference
             app:key="device_settings"
             app:title="Device Settings"

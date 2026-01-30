@@ -122,9 +122,7 @@ class MooltifillService : AutofillService() {
         val pi = PendingIntent.getActivity(applicationContext, info.query.hashCode(), intent, flags)
         dataset.setAuthentication(pi.intentSender)
         // NEW CODE Get Inline Suggestions
-        // Make this a SETTING or something
-        var INLINE_SUGGESTIONS = true
-        if (INLINE_SUGGESTIONS && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)) {
+        if (SettingsActivity.isInlineEnabled(applicationContext) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)) {
             logDebug("Attempting to handle inline suggestions")
             // Get a list of possible Inline Presentations
             val inlineSuggestions = request.inlineSuggestionsRequest?.inlinePresentationSpecs

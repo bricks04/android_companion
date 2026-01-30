@@ -121,6 +121,8 @@ class SettingsActivity : AppCompatActivity() {
         fun isDebugEnabled(context: Context): Boolean = parsedIntSetting(context, "debug_level", 0) > 0
         fun isDebugVerbose(context: Context): Boolean = parsedIntSetting(context, "debug_level", 0) > 1
         fun isAwarenessEnabled(context: Context): Boolean = booleanSetting(context, "awareness", true)
+        // Add a check for inline to ensure that compatible API is available, and notify the user?
+        fun isInlineEnabled(context: Context): Boolean = booleanSetting(context, "inline", true)
         private fun getChosenDeviceAddress(context: Context) = stringSetting(context, "chosen_device", null)
         fun isChosenDeviceAddress(context: Context, mac: String?, default: Boolean) = getChosenDeviceAddress(context)?.let { it == mac } ?: default
         fun setChosenDeviceAddress(context: Context, mac: String?) = if(mac == null) removeKey(context, "chosen_device") else putString(context, "chosen_device", mac)
